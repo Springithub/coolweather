@@ -1,6 +1,7 @@
 package com.coolweather.app.until;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.coolweather.app.model.City;
 import com.coolweather.app.model.CoolWeatherDB;
@@ -69,6 +70,7 @@ public class Utility {
 					county.setCityId(cityId);
 					// 将解析出来的数据存储到County表
 					coolWeatherDB.saveCounty(county);
+					Log.d("cw", "save county success");
 				}
 				return true;
 			}

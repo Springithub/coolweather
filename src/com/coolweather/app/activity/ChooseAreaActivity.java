@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -67,9 +68,11 @@ public class ChooseAreaActivity extends Activity {
 				if (currentLevel == LEVEL_PROVINCE) {
 					selectedProvince = provinceList.get(index);
 					queryCities();
+					Log.d("cl", "queryCities()");
 				} else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(index);
 					queryCounties();
+					Log.d("cl", "queryCounties()");
 				}
 			}
 
@@ -85,6 +88,7 @@ public class ChooseAreaActivity extends Activity {
 			dataList.clear();
 			for (Province province : provinceList) {
 				dataList.add(province.getProvinceName());
+				Log.d("cl", "query Province From DB");
 			}
 			adapter.notifyDataSetChanged();
 			listView.setSelection(0);
@@ -92,6 +96,7 @@ public class ChooseAreaActivity extends Activity {
 			currentLevel = LEVEL_PROVINCE;
 		} else {
 			queryFromServer(null, "province");
+			Log.d("cl", "query Province From Server");
 		}
 	}
 
@@ -102,6 +107,7 @@ public class ChooseAreaActivity extends Activity {
 			dataList.clear();
 			for (City city : cityList) {
 				dataList.add(city.getCityName());
+				Log.d("cl", "query Cities From DB");
 			}
 			adapter.notifyDataSetChanged();
 			listView.setSelection(0);
@@ -109,22 +115,25 @@ public class ChooseAreaActivity extends Activity {
 			currentLevel = LEVEL_CITY;
 		} else {
 			queryFromServer(selectedProvince.getProvinceCode(), "city");
+			Log.d("cl", "query cities From Server");
 		}
 	}
 
 	private void queryCounties() {
 		// TODO Auto-generated method stub
 		countyList = coolWeatherDB.loadCounties(selectedCity.getId());
-		if (cityList.size() > 0) {
+		if (countyList.size() > 0) {
 			dataList.clear();
 			for (County county : countyList) {
 				dataList.add(county.getCountyName());
+				Log.d("cl", "query Counties From DB");
 			}
 			adapter.notifyDataSetChanged();
 			titleText.setText(selectedCity.getCityName());
 			currentLevel = LEVEL_COUNTY;
 		} else {
 			queryFromServer(selectedCity.getCityCode(), "county");
+			Log.d("cl", "query Counties From Server");
 		}
 	}
 

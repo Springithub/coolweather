@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -90,21 +91,43 @@ public class Utility {
 
 	/**
 	 * 解析和处理服务器返回的JSON数据,并存储到本地
+	 * 
+	 * public static void handleWeaatherResponse(Context context, String
+	 * response) { try { JSONObject jsonObject = new JSONObject(response);
+	 * JSONObject weatherInfo = jsonObject.getJSONObject("weatherinfo"); String
+	 * cityName = weatherInfo.getString("city"); String weatherCode =
+	 * weatherInfo.getString("cityid"); String temp1 =
+	 * weatherInfo.getString("temp1"); String temp2 =
+	 * weatherInfo.getString("temp2"); String weatherDesp =
+	 * weatherInfo.getString("weather"); String publishTime =
+	 * weatherInfo.getString("ptime"); saveWeatherInfo(context, cityName,
+	 * weatherCode, temp1, temp2, weatherDesp, publishTime); } catch
+	 * (JSONException e) { // TODO Auto-generated catch block
+	 * e.printStackTrace(); } }
 	 */
-	public static void handleWeaatherResponse(Context context, String response) {
+	public static void handleWeatherResponse(Context context, String response) {
+		Log.d("cool", "try handle---");
+		Log.d("cool", response);
 		try {
 			JSONObject jsonObject = new JSONObject(response);
-			JSONObject weatherInfo = jsonObject.getJSONObject("weatherinfo");
+			JSONObject weatherInfo = jsonObject.getJSONObject("data");
 			String cityName = weatherInfo.getString("city");
-			String weatherCode = weatherInfo.getString("cityid");
-			String temp1 = weatherInfo.getString("temp1");
-			String temp2 = weatherInfo.getString("temp2");
-			String weatherDesp = weatherInfo.getString("weather");
-			String publishTime = weatherInfo.getString("ptime");
-			saveWeatherInfo(context, cityName, weatherCode, temp1, temp2,
-					weatherDesp, publishTime);
+			// // String weatherCode = weatherInfo.getString("cityid");
+			JSONArray forecast = weatherInfo.getJSONArray("forecast");
+			JSONObject today = forecast.getJSONObject(0);
+			String temp1 = today.getString("high");
+			String temp2 = today.getString("low");
+			String weatherDesp = today.getString("type");
+			String publishTime = today.getString("date");
+
+			saveWeatherInfo(context, cityName, temp1, temp2, weatherDesp,
+					publishTime);
+
+			Log.d("cool", "try handle");
+			Log.d("cool", temp1);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
+			Log.d("cool", "handle err");
 			e.printStackTrace();
 		}
 	}
@@ -113,14 +136,13 @@ public class Utility {
 	 * 将服务器返回的所有天气信息存储到SharedPreferences文件中
 	 */
 	private static void saveWeatherInfo(Context context, String cityName,
-			String weatherCode, String temp1, String temp2, String weatherDesp,
-			String publishTime) {
+			String temp1, String temp2, String weatherDesp, String publishTime) {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
 		SharedPreferences.Editor editor = PreferenceManager
 				.getDefaultSharedPreferences(context).edit();
 		editor.putBoolean("city_selected", true);
 		editor.putString("city_name", cityName);
-		editor.putString("weather_code", weatherCode);
+		// editor.putString("weather_code", weatherCode);
 		editor.putString("temp1", temp1);
 		editor.putString("temp2", temp2);
 		editor.putString("weather_desp", weatherDesp);

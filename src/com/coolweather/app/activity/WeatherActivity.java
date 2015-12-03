@@ -1,11 +1,14 @@
 package com.coolweather.app.activity;
 
+import java.net.URLDecoder;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -55,20 +58,21 @@ public class WeatherActivity extends Activity implements OnClickListener {
 		swithCity.setOnClickListener(this);
 		refreshWeather.setOnClickListener(this);
 
-		String countyCode = getIntent().getStringExtra("county_code");
-		if (!TextUtils.isEmpty(countyCode)) {
-			// 有县级代号时就去查天气
-			publishText.setText("同步中……");
-			weatherInfoLayout.setVisibility(View.INVISIBLE);
-			cityNametext.setVisibility(View.INVISIBLE);
-			queryWeatherCode(countyCode);
-			Toast.makeText(this, "正在查询……", Toast.LENGTH_SHORT).show();
-		} else {
-			// 没有县级代号时就直接显示本地天气
-			showWeather();
-			Toast.makeText(this, "本地天气", Toast.LENGTH_SHORT).show();
-		}
+		String county = getIntent().getStringExtra("county_name");
+		// if (!TextUtils.isEmpty(county)) {
+		// 有县级代号时就去查天气
+		publishText.setText("同步中……");
+		weatherInfoLayout.setVisibility(View.INVISIBLE);
+		cityNametext.setVisibility(View.INVISIBLE);
+		queryWeatherInfo(county);
+		// Toast.makeText(this, "正在查询……", Toast.LENGTH_SHORT).show();
+		// } else {
+		// 没有县级代号时就直接显示本地天气
+		// showWeather();
+		// Toast.makeText(this, "本地天气", Toast.LENGTH_SHORT).show();
 	}
+
+	// }
 
 	@Override
 	public void onClick(View v) {
@@ -83,9 +87,9 @@ public class WeatherActivity extends Activity implements OnClickListener {
 			publishText.setText("同步中……");
 			SharedPreferences prefs = PreferenceManager
 					.getDefaultSharedPreferences(this);
-			String weatherCode = prefs.getString("weather_code", "");
-			if (!TextUtils.isEmpty(weatherCode)) {
-				queryWeatherInfo(weatherCode);
+			String county = prefs.getString("city_name", "");
+			if (!TextUtils.isEmpty(county)) {
+				queryWeatherInfo(county);
 			}
 			break;
 		default:
@@ -94,45 +98,35 @@ public class WeatherActivity extends Activity implements OnClickListener {
 	}
 
 	// 查询县级代号所对应的天气代号
-	private void queryWeatherCode(String countyCode) {
-		String address = "http://www.weather.com.cn/data/list3/city"
-				+ countyCode + ".xml";
-		queryFromServer(address, "countyCode");
-
-	}
+	// private void queryWeatherCode(String countyCode) {
+	// String address = "http://www.weather.com.cn/data/list3/city"
+	// + countyCode + ".xml";
+	// queryFromServer(address, "countyCode");
+	//
+	// }
 
 	// 查询天气代号所对应的天气
-	private void queryWeatherInfo(String weatherCode) {
-		String address = "http://www.weather.com.cn/data/cityinfo/"
-				+ weatherCode + ".html";
-		queryFromServer(address, "weatherCode");
+	private void queryWeatherInfo(String county) {
+
+		String address = "http://wthrcdn.etouch.cn/weather_mini?city=" + county;
+		// Toast.makeText(this, address, Toast.LENGTH_LONG).show();
+		queryFromServer(address);
 	}
 
 	// 根据传入的地址和类型去向服务器查询天气代号或者天气信息
-	private void queryFromServer(final String address, final String type) {
+	private void queryFromServer(final String address) {
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
 			@Override
 			public void onFinish(final String response) {
-				if ("countyCode".equals(type)) {
-					if (!TextUtils.isEmpty(response)) {
-						// 从服务器返回的数据中解析天气代号
-						String[] array = response.split("\\|");
-						if (array != null && array.length == 2) {
-							String weatherCode = array[1];
-							queryWeatherInfo(weatherCode);
-						}
+
+				Utility.handleWeatherResponse(WeatherActivity.this, response);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						showWeather();
+						Log.d("coolw", "showWeater");
 					}
-				} else if ("weatherCode".equals(type)) {
-					// 处理服务器返回的天气信息
-					Utility.handleWeaatherResponse(WeatherActivity.this,
-							response);
-					runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							showWeather();
-						}
-					});
-				}
+				});
 			}
 
 			@Override
@@ -156,10 +150,14 @@ public class WeatherActivity extends Activity implements OnClickListener {
 		temp1Text.setText(prefs.getString("temp1", ""));
 		temp2Text.setText(prefs.getString("temp2", ""));
 		weatherDespText.setText(prefs.getString("weather_desp", ""));
-		publishText.setText("今天" + prefs.getString("publish_time", "") + "发布");
+		publishText.setText("更新于：" + prefs.getString("publish_time", ""));
 		currentDateText.setText(prefs.getString("current_date", ""));
 		weatherInfoLayout.setVisibility(View.VISIBLE);
 		cityNametext.setVisibility(View.VISIBLE);
+		Log.d("cool", "getPreferences");
+		Log.d("cool", prefs.getString("city_name", ""));
+		Log.d("cool", prefs.getString("temp1", ""));
+		Log.d("cool", prefs.getString("temp2", ""));
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.coolweather.app.activity;
 
-import java.net.URLDecoder;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -64,7 +65,12 @@ public class WeatherActivity extends Activity implements OnClickListener {
 		publishText.setText("同步中……");
 		weatherInfoLayout.setVisibility(View.INVISIBLE);
 		cityNametext.setVisibility(View.INVISIBLE);
-		queryWeatherInfo(county);
+		try {
+			queryWeatherInfo(county);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Toast.makeText(this, "正在查询……", Toast.LENGTH_SHORT).show();
 		// } else {
 		// 没有县级代号时就直接显示本地天气
@@ -89,7 +95,12 @@ public class WeatherActivity extends Activity implements OnClickListener {
 					.getDefaultSharedPreferences(this);
 			String county = prefs.getString("city_name", "");
 			if (!TextUtils.isEmpty(county)) {
-				queryWeatherInfo(county);
+				try {
+					queryWeatherInfo(county);
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			break;
 		default:
@@ -106,10 +117,10 @@ public class WeatherActivity extends Activity implements OnClickListener {
 	// }
 
 	// 查询天气代号所对应的天气
-	private void queryWeatherInfo(String county) {
-
-		String address = "http://wthrcdn.etouch.cn/weather_mini?city=" + county;
-		// Toast.makeText(this, address, Toast.LENGTH_LONG).show();
+	private void queryWeatherInfo(String county) throws UnsupportedEncodingException {
+		
+		String address = "http://wthrcdn.etouch.cn/weather_mini?city=" + URLEncoder.encode(county,"UTF-8");
+		Toast.makeText(this, address, Toast.LENGTH_LONG).show();
 		queryFromServer(address);
 	}
 
